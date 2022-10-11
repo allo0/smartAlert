@@ -1,4 +1,5 @@
 # from pulp import *
+import random
 import time
 from datetime import datetime
 from typing import Optional
@@ -10,10 +11,9 @@ from config.appConf import logger
 from source.models.event.event_model import EventType, EventsList, Event, EventDetails, SingleEventDetails
 
 
-def find_users_in_vicinity() -> list:
+def find_users_in_vicinity(location: str, timestamp: int, eventType: EventType) -> list:
     user_list = []
-    ref = db.reference('Events')
-    master_events_list = find_master_event(ref=ref)
+    lat, lon = location.split(",")
 
     user_ref = db.reference('UserLocation')
     user_snapshot = user_ref.get()
@@ -22,16 +22,13 @@ def find_users_in_vicinity() -> list:
         print(val)
         lat1, lon1 = val.split(",")
 
-        for master_events in master_events_list:
-            lat2, lon2 = master_events["location"].split(",")
-
-            distance = h3.point_dist([float(lat1), float(lon1)], [float(lat2), float(lon2)],
-                                     unit='m')  # to get distance in meters
-            # current_time = datetime.fromtimestamp(time.time())
-            ts = datetime.fromtimestamp(master_events["timestamp"] / 1000)  # / 1000
-            if distance < circle_radius(val=master_events["eventType"]) \
-                    and ts.second < time_interval(val=master_events["eventType"]) and key not in user_list:
-                user_list.append(key)
+        distance = h3.point_dist([float(lat1), float(lon1)], [float(lat), float(lon)],
+                                 unit='m')  # to get distance in meters
+        # current_time = datetime.fromtimestamp(time.time())
+        ts = datetime.fromtimestamp(timestamp / 1000)  # / 1000
+        if distance < circle_radius(val=eventType) \
+                and ts.second < time_interval(val=eventType) and key not in user_list:
+            user_list.append(key)
 
     return user_list
 
@@ -75,6 +72,8 @@ def find_events(ref, master_events_list: Optional[list]) -> EventsList:
                 case _:
                     pass
             logger.debug(event)
+            #TODO remove it
+            event.status_importance=round(random.uniform(0,10), 2)
             events_list.events.append(event)
 
         logger.info(events_list)

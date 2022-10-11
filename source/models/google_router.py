@@ -108,8 +108,8 @@ async def create_event(event: CreateEvent):
 
 
 @backendGoogleRouter.get("/users_in_vicinity")
-async def users_in_vicinity():
-    return find_users_in_vicinity()
+async def users_in_vicinity(location: str, timestamp: int, eventType: EventType):
+    return find_users_in_vicinity(location=location, timestamp=timestamp, eventType=eventType)
 
 
 @backendGoogleRouter.get("/incident_severity")

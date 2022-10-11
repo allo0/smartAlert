@@ -1,6 +1,6 @@
 import uuid
 from enum import IntEnum
-from typing import List, Optional
+from typing import List
 
 from pydantic import BaseModel
 
@@ -45,4 +45,3 @@ class EventsList(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
-
