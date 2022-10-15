@@ -1,5 +1,5 @@
 # from pulp import *
-import random
+import statistics
 import time
 from datetime import datetime
 from typing import Optional
@@ -45,35 +45,51 @@ def find_events(ref, master_events_list: Optional[list]) -> EventsList:
                     event.event_type = EventType.FIRE
                     event.master_event_id = master_events["id"]
                     event.master_event_point.append(master_events["location"])
-                    event.sub_events = filter_events(master_events, snapshot,
-                                                     circle_radius(val=master_events["eventType"]),
-                                                     time_interval(val=master_events["eventType"]), event)
+                    filtered_events = filter_events(master_events, snapshot,
+                                                    circle_radius(val=master_events["eventType"]),
+                                                    time_interval(val=master_events["eventType"]), event)
+                    event.sub_events = filtered_events
+                    event.status_importance = find_status_importance(events=filtered_events,
+                                                                     event_type=event.event_type,
+                                                                     master_event=master_events)
                 case EventType.EARTHQUAKE:
                     event.event_type = EventType.EARTHQUAKE
                     event.master_event_id = master_events["id"]
                     event.master_event_point.append(master_events["location"])
-                    event.sub_events = filter_events(master_events, snapshot,
-                                                     circle_radius(val=master_events["eventType"]),
-                                                     time_interval(val=master_events["eventType"]), event)
+                    filtered_events = filter_events(master_events, snapshot,
+                                                    circle_radius(val=master_events["eventType"]),
+                                                    time_interval(val=master_events["eventType"]), event)
+                    event.sub_events = filtered_events
+                    event.status_importance = find_status_importance(events=filtered_events,
+                                                                     event_type=event.event_type,
+                                                                     master_event=master_events)
                 case EventType.FLOOD:
                     event.event_type = EventType.FLOOD
                     event.master_event_id = master_events["id"]
                     event.master_event_point.append(master_events["location"])
-                    event.sub_events = filter_events(master_events, snapshot,
-                                                     circle_radius(val=master_events["eventType"]),
-                                                     time_interval(val=master_events["eventType"]), event)
+                    filtered_events = filter_events(master_events, snapshot,
+                                                    circle_radius(val=master_events["eventType"]),
+                                                    time_interval(val=master_events["eventType"]), event)
+                    event.sub_events = filtered_events
+                    event.status_importance = find_status_importance(events=filtered_events,
+                                                                     event_type=event.event_type,
+                                                                     master_event=master_events)
                 case EventType.OTHER:
                     event.event_type = EventType.OTHER
                     event.master_event_id = master_events["id"]
                     event.master_event_point.append(master_events["location"])
-                    event.sub_events = filter_events(master_events, snapshot,
-                                                     circle_radius(val=master_events["eventType"]),
-                                                     time_interval(val=master_events["eventType"]), event)
+                    filtered_events = filter_events(master_events, snapshot,
+                                                    circle_radius(val=master_events["eventType"]),
+                                                    time_interval(val=master_events["eventType"]), event)
+                    event.sub_events = filtered_events
+                    event.status_importance = find_status_importance(events=filtered_events,
+                                                                     event_type=event.event_type,
+                                                                     master_event=master_events)
                 case _:
                     pass
             logger.debug(event)
-            #TODO remove it
-            event.status_importance=round(random.uniform(0,10), 2)
+            # TODO remove it
+            # event.status_importance = round(random.uniform(0, 10), 2)
             events_list.events.append(event)
 
         logger.info(events_list)
@@ -107,6 +123,7 @@ def filter_events(master_events, snapshot, range, time_range, event) -> EventDet
             # logger.info('{0},{1}'.format(val["timestamp"], val2["timestamp"]))
             single_event_details.event_id = val2["id"]
             single_event_details.point.append([lat2, lon2])
+            single_event_details.timestamp = val2["timestamp"]
 
 
         else:
@@ -141,6 +158,64 @@ def find_master_event(ref) -> list:
 
     logger.info(mini_master)
     return mini_master
+
+
+def find_status_importance(events: EventDetails, event_type: EventType, master_event: list) -> float:
+    events_time_range = [ev.timestamp for event in events for ev in event[1]]
+    # events_location = [ev.point for event in events for ev in event[1]]
+    events_count = len(events.event)
+
+    # avg_time = round(statistics.fmean(events_time_range), 0)
+    avg_time = datetime.fromtimestamp(round(statistics.fmean(events_time_range), 0) / 1000)
+    master_event_time = datetime.fromtimestamp(master_event["timestamp"] / 1000)
+    # master_event_location = master_event["location"]
+
+    return status_importance(event_type=event_type, events_count=events_count, avg_time=avg_time,
+                             master_event_time=master_event_time)
+
+
+def status_importance(event_type: EventType, events_count: int, avg_time: datetime,
+                      master_event_time: datetime) -> float:
+    timedelta = master_event_time - avg_time
+    match event_type:
+        case EventType.FIRE:
+            return status_value(events_count=events_count, timedelta=timedelta, event_type=event_type)
+        case EventType.EARTHQUAKE:
+            return status_value(events_count=events_count, timedelta=timedelta, event_type=event_type)
+        case EventType.FLOOD:
+            return status_value(events_count=events_count, timedelta=timedelta, event_type=event_type)
+        case EventType.OTHER:
+            return status_value(events_count=events_count, timedelta=timedelta, event_type=event_type)
+
+
+def status_value(events_count: int, timedelta, event_type: EventType):
+    if 10 < events_count:
+        if timedelta.seconds < 300:
+            return 10.0
+        elif 300 < timedelta.seconds < 900:
+            return 8 + (timedelta.seconds / 100) * -1
+        elif 900 < timedelta.seconds < time_interval(event_type):
+            return 5 + (timedelta.seconds / 100) * -1
+        else:
+            return 1.0
+    elif 5 < events_count <= 10:
+        if timedelta.seconds < 300:
+            return 7.5
+        elif 300 < timedelta.seconds < 900:
+            return 5.5 + (timedelta.seconds / 100) * -1
+        elif 900 < timedelta.seconds < time_interval(event_type):
+            return 2 + (timedelta.seconds / 100) * -1
+        else:
+            return 1.0
+    elif events_count <= 5:
+        if timedelta.seconds < 300:
+            return 3.5
+        elif 300 < timedelta.seconds < 900:
+            return 2.5 + (timedelta.seconds / 100) * -1
+        elif 900 < timedelta.seconds < time_interval(event_type):
+            return 1 + (timedelta.seconds / 100) * -1
+        else:
+            return 0.5
 
 
 def color_marker(val):

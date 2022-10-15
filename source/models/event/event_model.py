@@ -26,6 +26,8 @@ class EventType(IntEnum):
 class SingleEventDetails(BaseModel):
     event_id: str = ''
     point: list = []
+    timestamp: float = 0.0
+
 
 
 class EventDetails(BaseModel):
