@@ -245,10 +245,10 @@ def circle_radius(val):
 def time_interval(val):
     match val:
         case EventType.FIRE:
-            return 106000
+            return 3600
         case EventType.EARTHQUAKE:
-            return 106000
+            return 3600 * 0.20
         case EventType.FLOOD:
-            return 106000
+            return 3600 * 0.25
         case EventType.OTHER:
-            return 106000
+            return 3600 * 0.5
