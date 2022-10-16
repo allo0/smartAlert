@@ -198,36 +198,36 @@ def status_importance(event_type: EventType, events_count: int, avg_time: dateti
 def status_value(events_count: int, timedelta, event_type: EventType):
     if timedelta.seconds < 60:
         if 0 <= events_count < 3:
-            return 6 + (events_count / 10) + (timedelta.seconds / 100) * -1
+            return 6 + (events_count / 10) + (timedelta.seconds / 100) 
         if 3 <= events_count < 6:
-            return 7 + (events_count / 10) + (timedelta.seconds / 100) * -1
-        else:
+            return 7 + (events_count / 10) + (timedelta.seconds / 100) 
+        elif events_count >= 6:
             return 10.0
     if 10 < events_count:
         if timedelta.seconds < 300:
             return 10.0
         elif 300 < timedelta.seconds < 900:
-            return 8 + (timedelta.seconds / 100) * -1
+            return 8 + (timedelta.seconds / 100) 
         elif 900 < timedelta.seconds < time_interval(event_type):
-            return 5 + (timedelta.seconds / 100) * -1
+            return 5 + (timedelta.seconds / 100) 
         else:
             return 1.0
     elif 5 < events_count <= 10:
         if timedelta.seconds < 300:
-            return 7.5
+            return 7.5 + (timedelta.seconds / 100) 
         elif 300 < timedelta.seconds < 900:
-            return 5.5 + (timedelta.seconds / 100) * -1
+            return 5.5 + (timedelta.seconds / 100) 
         elif 900 < timedelta.seconds < time_interval(event_type):
-            return 2 + (timedelta.seconds / 100) * -1
+            return 2 + (timedelta.seconds / 100) 
         else:
             return 1.0
     elif events_count <= 5:
         if timedelta.seconds < 300:
-            return 3.5
+            return 3.5 + (timedelta.seconds / 100) 
         elif 300 < timedelta.seconds < 900:
-            return 2.5 + (timedelta.seconds / 100) * -1
+            return 2.5 + (timedelta.seconds / 100) 
         elif 900 < timedelta.seconds < time_interval(event_type):
-            return 1 + (timedelta.seconds / 100) * -1
+            return 1 + (timedelta.seconds / 100) 
         else:
             return 0.5
 
