@@ -138,7 +138,7 @@ async def incident_map(request: Request):
 
         folium.Marker(
             val["location"].split(","),
-            popup="<i>" + val["comments"] + "</i>",
+            popup="<i>" + val["comments"] + "\nat location: " + val["location"] + "</i>",
             tooltip=tooltip,
             icon=folium.Icon(color=color_marker(val=val["eventType"]))
         ).add_to(marker_cluster)
