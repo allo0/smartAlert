@@ -100,6 +100,7 @@ async def create_event(event: CreateEvent):
         'eventType': event.eventType,
         'id': event.id,
         'location': event.location,
+        'severity': event.severity,
         'timestamp': event.timestamp,
         'userEmail': event.userEmail
     })

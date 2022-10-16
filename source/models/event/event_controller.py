@@ -49,9 +49,10 @@ def find_events(ref, master_events_list: Optional[list]) -> EventsList:
                                                     circle_radius(val=master_events["eventType"]),
                                                     time_interval(val=master_events["eventType"]), event)
                     event.sub_events = filtered_events
-                    event.status_importance = find_status_importance(events=filtered_events,
-                                                                     event_type=event.event_type,
-                                                                     master_event=master_events)
+                    status_importance = find_status_importance(events=filtered_events,
+                                                               event_type=event.event_type,
+                                                               master_event=master_events)
+                    event.status_importance = status_importance if (status_importance is not None) else 0
                 case EventType.EARTHQUAKE:
                     event.event_type = EventType.EARTHQUAKE
                     event.master_event_id = master_events["id"]
@@ -60,9 +61,10 @@ def find_events(ref, master_events_list: Optional[list]) -> EventsList:
                                                     circle_radius(val=master_events["eventType"]),
                                                     time_interval(val=master_events["eventType"]), event)
                     event.sub_events = filtered_events
-                    event.status_importance = find_status_importance(events=filtered_events,
-                                                                     event_type=event.event_type,
-                                                                     master_event=master_events)
+                    status_importance = find_status_importance(events=filtered_events,
+                                                               event_type=event.event_type,
+                                                               master_event=master_events)
+                    event.status_importance = status_importance if (status_importance is not None) else 0
                 case EventType.FLOOD:
                     event.event_type = EventType.FLOOD
                     event.master_event_id = master_events["id"]
@@ -71,9 +73,10 @@ def find_events(ref, master_events_list: Optional[list]) -> EventsList:
                                                     circle_radius(val=master_events["eventType"]),
                                                     time_interval(val=master_events["eventType"]), event)
                     event.sub_events = filtered_events
-                    event.status_importance = find_status_importance(events=filtered_events,
-                                                                     event_type=event.event_type,
-                                                                     master_event=master_events)
+                    status_importance = find_status_importance(events=filtered_events,
+                                                               event_type=event.event_type,
+                                                               master_event=master_events)
+                    event.status_importance = status_importance if (status_importance is not None) else 0
                 case EventType.OTHER:
                     event.event_type = EventType.OTHER
                     event.master_event_id = master_events["id"]
@@ -82,9 +85,10 @@ def find_events(ref, master_events_list: Optional[list]) -> EventsList:
                                                     circle_radius(val=master_events["eventType"]),
                                                     time_interval(val=master_events["eventType"]), event)
                     event.sub_events = filtered_events
-                    event.status_importance = find_status_importance(events=filtered_events,
-                                                                     event_type=event.event_type,
-                                                                     master_event=master_events)
+                    status_importance = find_status_importance(events=filtered_events,
+                                                               event_type=event.event_type,
+                                                               master_event=master_events)
+                    event.status_importance = status_importance if (status_importance is not None) else 0
                 case _:
                     pass
             logger.debug(event)
@@ -166,12 +170,15 @@ def find_status_importance(events: EventDetails, event_type: EventType, master_e
     events_count = len(events.event)
 
     # avg_time = round(statistics.fmean(events_time_range), 0)
-    avg_time = datetime.fromtimestamp(round(statistics.fmean(events_time_range), 0) / 1000)
-    master_event_time = datetime.fromtimestamp(master_event["timestamp"] / 1000)
-    # master_event_location = master_event["location"]
+    try:
+        avg_time = datetime.fromtimestamp(round(statistics.fmean(events_time_range), 0) / 1000)
+        master_event_time = datetime.fromtimestamp(master_event["timestamp"] / 1000)
+        # master_event_location = master_event["location"]
 
-    return status_importance(event_type=event_type, events_count=events_count, avg_time=avg_time,
-                             master_event_time=master_event_time)
+        return status_importance(event_type=event_type, events_count=events_count, avg_time=avg_time,
+                                 master_event_time=master_event_time)
+    except statistics.StatisticsError:
+        pass
 
 
 def status_importance(event_type: EventType, events_count: int, avg_time: datetime,

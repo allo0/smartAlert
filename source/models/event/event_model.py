@@ -12,6 +12,7 @@ class CreateEvent(BaseModel):
     eventType: int = 0
     id: str = uuid.uuid4()
     location: str = "40.6403,22.9356"
+    severity: float = 0.0
     timestamp: float = 1661884529238
     userEmail: str = ""
 
@@ -27,7 +28,6 @@ class SingleEventDetails(BaseModel):
     event_id: str = ''
     point: list = []
     timestamp: float = 0.0
-
 
 
 class EventDetails(BaseModel):
