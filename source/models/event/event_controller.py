@@ -196,6 +196,13 @@ def status_importance(event_type: EventType, events_count: int, avg_time: dateti
 
 
 def status_value(events_count: int, timedelta, event_type: EventType):
+    if timedelta.seconds < 60:
+        if 0 <= events_count < 3:
+            return 6 + (events_count / 10) + (timedelta.seconds / 100) * -1
+        if 3 <= events_count < 6:
+            return 7 + (events_count / 10) + (timedelta.seconds / 100) * -1
+        else:
+            return 10.0
     if 10 < events_count:
         if timedelta.seconds < 300:
             return 10.0
